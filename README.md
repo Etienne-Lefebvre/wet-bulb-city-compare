@@ -14,7 +14,7 @@ The heat index tells you how hot it *feels*; the wet-bulb temperature tells you 
 
 ## Features
 
-- Fully bilingual: English / Español toggle covering the whole page, including all text on the chart itself
+- Fully trilingual: English / Español / Français toggle covering the whole page, including all text on the chart itself
 - Search any city worldwide (Open-Meteo geocoding), up to 8 at once
 - Dot plotted at the peak wet-bulb hour of **today or tomorrow** (city-local time)
 - Table with peak wet-bulb, time, air temperature, humidity, heat index and its danger category

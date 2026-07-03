@@ -90,19 +90,54 @@ const I18N = {
     tipHigh: "(más caliente que el rango del gráfico: fijado al borde superior)",
     cat: { caution: "Precaución", excaution: "Precaución extrema", danger: "Peligro", extreme: "Peligro extremo" },
   },
+  fr: {
+    tagline: "Choisis des villes et compare l'heure de la température humide maximale, tracée sur le graphique d'indice de chaleur de la NOAA.",
+    searchPlaceholder: "Rechercher une ville…",
+    searchAria: "Rechercher une ville",
+    today: "Aujourd'hui",
+    tomorrow: "Demain",
+    dayAria: "Jour de prévision",
+    chartNote: "Chaque point marque une ville à son heure prévue de <strong>température humide maximale</strong> (thermomètre mouillé) pour le jour choisi (température de l'air vs humidité relative). Les courbes et zones colorées montrent l'indice de chaleur. Les villes hors du graphique sont fixées au bord avec un marqueur creux.",
+    thCity: "Ville", thPeak: "Temp. humide max.", thAt: "Heure (locale)", thAir: "Temp. de l'air",
+    thHum: "Humidité", thHi: "Indice de chaleur", thRemove: "Retirer",
+    empty: `Aucune ville pour l'instant : cherche ci-dessus pour en ajouter une (jusqu'à ${MAX_CITIES}).`,
+    footer: 'Données météo de <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) · Graphique : <a href="https://www.weather.gov/jetstream/hi" rel="noopener">indice de chaleur NOAA JetStream</a> (domaine public) · <a href="https://github.com/Etienne-Lefebvre/wet-bulb-city-compare" rel="noopener">Code source sur GitHub</a>',
+    disclaimer: "Une température humide proche de 31 °C est dangereuse même pour des personnes en bonne santé au repos ; 35 °C est considérée comme insupportable pour le corps en exposition prolongée. Ceci est un outil amateur : ne l'utilise pas pour des décisions de sécurité.",
+    noMatches: "Aucun résultat",
+    loading: (name) => `Chargement des prévisions pour ${name}…`,
+    loadingMany: "Chargement des prévisions…",
+    loadFail: (name, err) => `Impossible de charger les prévisions pour ${name} : ${err}`,
+    loadFailMany: (names) => `Impossible de charger les prévisions pour : ${names}`,
+    already: (name) => `${name} est déjà sur le graphique.`,
+    limit: `Limite de ${MAX_CITIES} villes atteinte : retire d'abord une ville.`,
+    searchFail: (err) => `La recherche de villes a échoué : ${err}`,
+    chartFail: (err) => `Impossible de charger le graphique (${err}). Si tu as ouvert index.html directement depuis le disque, sers-le plutôt avec : python -m http.server`,
+    removeCity: (name) => `Retirer ${name}`,
+    svgAria: "Graphique d'indice de chaleur de la NOAA : température de l'air contre humidité relative, avec un point par ville à son heure de température humide maximale",
+    tipPeak: (v, time) => `temp. humide max. ${v}°C à ${time} (heure locale)`,
+    tipAir: (t, f, rh) => `Air ${t}°C (${f}°F), humidité ${rh}%`,
+    tipHi: (c, f) => `Indice de chaleur ${c}°C (${f}°F)`,
+    tipLow: "(plus froid que le graphique : fixé au bord inférieur)",
+    tipHigh: "(plus chaud que le graphique : fixé au bord supérieur)",
+    cat: { caution: "Prudence", excaution: "Prudence extrême", danger: "Danger", extreme: "Danger extrême" },
+  },
 };
 
-let lang = localStorage.getItem("wbc-lang") ||
-  ((navigator.language || "").toLowerCase().startsWith("es") ? "es" : "en");
+const LANGS = ["en", "es", "fr"];
+
+let lang = localStorage.getItem("wbc-lang") || (() => {
+  const nav = (navigator.language || "").toLowerCase().slice(0, 2);
+  return LANGS.includes(nav) ? nav : "en";
+})();
 
 const t = (key, ...args) => {
   const v = I18N[lang][key];
   return typeof v === "function" ? v(...args) : v;
 };
 
-// Spanish text for the chart SVG itself. Each entry rewrites one <tspan>/<text>
-// (per-glyph x positioning is replaced by a single anchor, so translated
-// strings flow naturally in place).
+// Translated text for the chart SVG itself. Each entry rewrites one
+// <tspan>/<text> (per-glyph x positioning is replaced by a single anchor, so
+// translated strings flow naturally in place).
 const SVG_ES = [
   // zone words
   { id: "tspan570", text: "EXTREMADAMENTE CALIENTE", x: 163, anchor: "middle", size: 24 },
@@ -140,12 +175,76 @@ const SVG_ES = [
   { id: "tspan252", text: "hasta en 8°C. Además, los vientos fuertes, sobre todo con aire muy caliente y seco, pueden ser muy peligrosos.", x: 423.93604 },
 ];
 
+const SVG_FR = [
+  // zone words
+  { id: "tspan570", text: "EXTRÊMEMENT TORRIDE", x: 163, anchor: "middle", size: 26 },
+  { id: "tspan576", text: "TRÈS TORRIDE", x: 102, anchor: "middle", size: 27 },
+  { id: "tspan582", text: "TORRIDE", x: 45, anchor: "middle", size: 20 },
+  { id: "tspan588", text: "TRÈS CHAUD", x: 116, anchor: "middle", size: 28 },
+  { id: "tspan590", text: "CHAUD", x: 116, anchor: "middle", size: 30 },
+  // axis titles (the tiny standalone degree glyphs are hidden; ° is inlined)
+  { id: "tspan168", text: "Humidité Relative (%)", x: 171, anchor: "middle" },
+  { id: "tspan172", text: "Température de l'Air (°C)", x: 167, anchor: "middle" },
+  { id: "text174", hide: true },
+  { id: "tspan220", text: "Température Apparente (°C)", x: 269, anchor: "middle" },
+  { id: "text222", hide: true },
+  // big red title (and its outline copy), smaller so it clears the paragraph
+  { id: "tspan228", text: "Indice de Chaleur", x: 0, size: 56 },
+  { id: "tspan240", text: "Indice de Chaleur", x: 0, size: 56 },
+  // legend table
+  { id: "tspan604", text: "Effets sur les personnes à haut risque", x: 197, anchor: "middle" },
+  { id: "tspan648", text: "Indice de chaleur/", x: 93, anchor: "middle" },
+  { id: "tspan650", text: "Température apparente", x: 89, anchor: "middle" },
+  { id: "tspan706", text: "Coup de chaleur ou insolation TRÈS", x: 0, size: 19 },
+  { id: "tspan708", text: "PROBABLES en cas d'exposition continue", x: 0, size: 19 },
+  { id: "tspan710", text: "Insolation, crampes ou épuisement", x: 0, size: 19 },
+  { id: "tspan712", text: "PROBABLES, coup de chaleur POSSIBLE si", x: 0, size: 19 },
+  { id: "tspan714", text: "exposition prolongée et/ou activité physique", x: 0, size: 19 },
+  { id: "tspan716", text: "Insolation, crampes ou épuisement dus à la", x: 0, size: 19 },
+  { id: "tspan718", text: "chaleur POSSIBLES si exposition prolongée", x: 0, size: 19 },
+  { id: "tspan720", text: "et/ou activité physique", x: 0, size: 19 },
+  { id: "tspan722", text: "Fatigue POSSIBLE en cas d'exposition", x: 0, size: 19 },
+  { id: "tspan724", text: "prolongée et/ou activité physique", x: 0, size: 19 },
+  // description paragraph (top center)
+  { id: "tspan246", text: "L'« Indice de Chaleur » mesure la chaleur « ressentie » par le corps. Ce tableau utilise l'humidité relative", x: 423.93604 },
+  { id: "tspan248", text: "et la température de l'air pour produire la « température apparente » : celle que le corps « ressent ».", x: 423.93604 },
+  { id: "tspan250", text: "Ces valeurs valent pour les endroits à l'ombre. En plein soleil, l'indice de chaleur peut augmenter", x: 423.93604 },
+  { id: "tspan252", text: "jusqu'à 8°C. De plus, les vents forts, surtout par air très chaud et sec, peuvent être très dangereux.", x: 423.93604 },
+];
+
+const SVG_I18N = { es: SVG_ES, fr: SVG_FR };
 const svgOriginals = new Map(); // id -> saved attributes for restoring English
+
+function applySvgEntry(el, entry) {
+  if (entry.hide) {
+    el.setAttribute("display", "none");
+    return;
+  }
+  el.textContent = entry.text;
+  el.setAttribute("x", String(entry.x));
+  if (entry.anchor) el.setAttribute("text-anchor", entry.anchor);
+  if (entry.size) el.style.fontSize = entry.size + "px";
+}
+
+function restoreSvgEntry(el, o) {
+  el.textContent = o.text;
+  if (o.x == null) el.removeAttribute("x"); else el.setAttribute("x", o.x);
+  if (o.anchor == null) el.removeAttribute("text-anchor"); else el.setAttribute("text-anchor", o.anchor);
+  el.style.fontSize = o.size;
+  if (o.display == null) el.removeAttribute("display"); else el.setAttribute("display", o.display);
+}
 
 function translateSvg() {
   const svg = document.querySelector("#chart svg");
   if (!svg) return;
-  for (const entry of SVG_ES) {
+  // Reset everything to the English original first, then apply the current
+  // language on top (keeps switching between non-English languages correct).
+  for (const [id, o] of svgOriginals) {
+    const el = svg.getElementById(id);
+    if (el) restoreSvgEntry(el, o);
+  }
+  const entries = SVG_I18N[lang] || [];
+  for (const entry of entries) {
     const el = svg.getElementById(entry.id);
     if (!el) continue;
     if (!svgOriginals.has(entry.id)) {
@@ -157,23 +256,7 @@ function translateSvg() {
         display: el.getAttribute("display"),
       });
     }
-    if (lang === "es") {
-      if (entry.hide) {
-        el.setAttribute("display", "none");
-      } else {
-        el.textContent = entry.text;
-        el.setAttribute("x", String(entry.x));
-        if (entry.anchor) el.setAttribute("text-anchor", entry.anchor);
-        if (entry.size) el.style.fontSize = entry.size + "px";
-      }
-    } else {
-      const o = svgOriginals.get(entry.id);
-      el.textContent = o.text;
-      if (o.x == null) el.removeAttribute("x"); else el.setAttribute("x", o.x);
-      if (o.anchor == null) el.removeAttribute("text-anchor"); else el.setAttribute("text-anchor", o.anchor);
-      el.style.fontSize = o.size;
-      if (o.display == null) el.removeAttribute("display"); else el.setAttribute("display", o.display);
-    }
+    applySvgEntry(el, entry);
   }
   svg.setAttribute("aria-label", t("svgAria"));
 }
@@ -190,10 +273,11 @@ function applyStaticText() {
   input.placeholder = t("searchPlaceholder");
   input.setAttribute("aria-label", t("searchAria"));
   document.querySelector(".day-toggle").setAttribute("aria-label", t("dayAria"));
-  document.querySelector("#lang-en").classList.toggle("active", lang === "en");
-  document.querySelector("#lang-es").classList.toggle("active", lang === "es");
-  document.querySelector("#lang-en").setAttribute("aria-pressed", String(lang === "en"));
-  document.querySelector("#lang-es").setAttribute("aria-pressed", String(lang === "es"));
+  for (const l of LANGS) {
+    const btn = document.querySelector(`#lang-${l}`);
+    btn.classList.toggle("active", lang === l);
+    btn.setAttribute("aria-pressed", String(lang === l));
+  }
 }
 
 function setLanguage(next) {
@@ -577,8 +661,9 @@ function setupDayToggle() {
 }
 
 function setupLangToggle() {
-  $("#lang-en").addEventListener("click", () => setLanguage("en"));
-  $("#lang-es").addEventListener("click", () => setLanguage("es"));
+  for (const l of LANGS) {
+    $(`#lang-${l}`).addEventListener("click", () => setLanguage(l));
+  }
 }
 
 // ---------------------------------------------------------------------------
