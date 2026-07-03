@@ -17,9 +17,9 @@ The heat index tells you how hot it *feels*; the wet-bulb temperature tells you 
 - Search any city worldwide (Open-Meteo geocoding), up to 8 at once
 - Dot plotted at the peak wet-bulb hour of **today or tomorrow** (city-local time)
 - Table with peak wet-bulb, time, air temperature, humidity, heat index and its danger category
-- Celsius labels added to the chart's Fahrenheit temperature axis
+- Chart fully converted to Celsius (axis, apparent-temperature curves, and legend; the NOAA original is Fahrenheit)
 - Cities remembered in your browser (localStorage) — no accounts, no tracking
-- Cities cooler than the chart's 70 °F range are pinned to the chart edge as hollow dots
+- Cities cooler than the chart's 21 °C range are pinned to the chart edge as hollow dots
 
 ## Running it
 
@@ -37,7 +37,7 @@ python -m http.server
 
 - **Weather data:** [Open-Meteo](https://open-meteo.com/) forecast API (free for non-commercial use, no key). Hourly `temperature_2m`, `relative_humidity_2m` and `wet_bulb_temperature_2m`; if the wet-bulb field is ever missing it falls back to the Stull (2011) approximation.
 - **Heat index:** NWS Rothfusz regression with the official low-humidity and high-humidity adjustments.
-- **Chart:** the NOAA JetStream heat index graph (public domain, US government work). `Heat_Index_graph.svg` is the untouched original; `graph.svg` adds Celsius axis labels and a `viewBox`. Dot positions are calibrated against the chart's own gridlines (see constants at the top of `app.js`).
+- **Chart:** the NOAA JetStream heat index graph (public domain, US government work). `Heat_Index_graph.svg` is the untouched original; `graph.svg` converts all temperatures on it to Celsius and adds a `viewBox`. Dot positions are calibrated against the chart's own gridlines (see constants at the top of `app.js`).
 
 ## Credits & license
 
