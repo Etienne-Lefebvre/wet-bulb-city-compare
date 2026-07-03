@@ -10,20 +10,26 @@
 </head>
 <body>
   <header class="site-header">
-    <h1>Wet-Bulb City Compare</h1>
-    <p class="tagline">Pick cities and compare the hour of peak wet-bulb temperature, plotted on the NOAA heat index chart.</p>
+    <div class="header-row">
+      <h1>Wet-Bulb City Compare</h1>
+      <div class="lang-toggle" role="group" aria-label="Language / Idioma">
+        <button id="lang-en" class="lang-btn" aria-pressed="true" lang="en">English</button>
+        <button id="lang-es" class="lang-btn" aria-pressed="false" lang="es">Español</button>
+      </div>
+    </div>
+    <p class="tagline" data-i18n="tagline"></p>
   </header>
 
   <main>
-    <section class="controls" aria-label="Add a city">
+    <section class="controls">
       <div class="search-box">
-        <input id="city-search" type="search" placeholder="Search for a city&hellip;" autocomplete="off"
-               aria-label="Search for a city" aria-expanded="false" role="combobox" aria-controls="search-results">
+        <input id="city-search" type="search" autocomplete="off"
+               aria-expanded="false" role="combobox" aria-controls="search-results">
         <ul id="search-results" role="listbox" hidden></ul>
       </div>
-      <div class="day-toggle" role="group" aria-label="Forecast day">
-        <button id="day-today" class="day-btn active" aria-pressed="true">Today</button>
-        <button id="day-tomorrow" class="day-btn" aria-pressed="false">Tomorrow</button>
+      <div class="day-toggle" role="group">
+        <button id="day-today" class="day-btn active" aria-pressed="true" data-i18n="today"></button>
+        <button id="day-tomorrow" class="day-btn" aria-pressed="false" data-i18n="tomorrow"></button>
       </div>
     </section>
 
@@ -31,36 +37,31 @@
 
     <section class="chart-wrap" aria-label="Heat index chart">
       <div id="chart"><!-- graph.svg is injected here --></div>
-      <p class="chart-note">Each dot marks a city at its forecast hour of <strong>peak wet-bulb temperature</strong> for the selected day
-        (air temperature vs. relative humidity). Curves and colored zones show the heat index. Off-chart cities are pinned to the chart edge with a hollow marker.</p>
+      <p class="chart-note" data-i18n-html="chartNote"></p>
     </section>
 
     <section class="city-list" aria-label="Selected cities">
       <table id="city-table" hidden>
         <thead>
           <tr>
-            <th scope="col">City</th>
-            <th scope="col">Peak wet-bulb</th>
-            <th scope="col">At (local)</th>
-            <th scope="col">Air temp</th>
-            <th scope="col">Humidity</th>
-            <th scope="col">Heat index</th>
-            <th scope="col"><span class="visually-hidden">Remove</span></th>
+            <th scope="col" data-i18n="thCity"></th>
+            <th scope="col" data-i18n="thPeak"></th>
+            <th scope="col" data-i18n="thAt"></th>
+            <th scope="col" data-i18n="thAir"></th>
+            <th scope="col" data-i18n="thHum"></th>
+            <th scope="col" data-i18n="thHi"></th>
+            <th scope="col"><span class="visually-hidden" data-i18n="thRemove"></span></th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
-      <p id="empty-hint">No cities yet &mdash; search above to add one (up to 8).</p>
+      <p id="empty-hint" data-i18n="empty"></p>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>
-      Weather data by <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) &middot;
-      Chart: <a href="https://www.weather.gov/jetstream/hi" rel="noopener">NOAA JetStream heat index graph</a> (public domain) &middot;
-      <a href="https://github.com/Etienne-Lefebvre/wet-bulb-city-compare" id="repo-link" rel="noopener">Source on GitHub</a>
-    </p>
-    <p class="disclaimer">Wet-bulb temperatures near 31&nbsp;&deg;C are dangerous even for healthy people at rest; 35&nbsp;&deg;C is considered unsurvivable for prolonged exposure. This is a hobby tool &mdash; don't use it for safety-critical decisions.</p>
+    <p data-i18n-html="footer"></p>
+    <p class="disclaimer" data-i18n="disclaimer"></p>
   </footer>
 
   <script src="app.js"></script>

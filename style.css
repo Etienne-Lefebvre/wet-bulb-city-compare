@@ -40,8 +40,28 @@ body {
 }
 
 .site-header { padding: 28px 0 4px; }
-.site-header h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 4px;
+}
+.site-header h1 { margin: 0; font-size: 1.6rem; }
 .tagline { margin: 0; color: var(--ink-2); }
+
+.lang-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.lang-btn {
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: none;
+  cursor: pointer;
+}
+.lang-btn.active { background: var(--accent); color: #fff; }
 
 /* Controls */
 .controls {

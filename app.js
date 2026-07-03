@@ -26,6 +26,186 @@ const PALETTE = ["#2a78d6", "#1baf7a", "#eda100", "#008300", "#4a3aa7", "#e34948
 const MAX_CITIES = PALETTE.length;
 
 // ---------------------------------------------------------------------------
+// Internationalization
+const I18N = {
+  en: {
+    tagline: "Pick cities and compare the hour of peak wet-bulb temperature, plotted on the NOAA heat index chart.",
+    searchPlaceholder: "Search for a city…",
+    searchAria: "Search for a city",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    dayAria: "Forecast day",
+    chartNote: "Each dot marks a city at its forecast hour of <strong>peak wet-bulb temperature</strong> for the selected day (air temperature vs. relative humidity). Curves and colored zones show the heat index. Off-chart cities are pinned to the chart edge with a hollow marker.",
+    thCity: "City", thPeak: "Peak wet-bulb", thAt: "At (local)", thAir: "Air temp",
+    thHum: "Humidity", thHi: "Heat index", thRemove: "Remove",
+    empty: `No cities yet — search above to add one (up to ${MAX_CITIES}).`,
+    footer: 'Weather data by <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) · Chart: <a href="https://www.weather.gov/jetstream/hi" rel="noopener">NOAA JetStream heat index graph</a> (public domain) · <a href="https://github.com/Etienne-Lefebvre/wet-bulb-city-compare" rel="noopener">Source on GitHub</a>',
+    disclaimer: "Wet-bulb temperatures near 31 °C are dangerous even for healthy people at rest; 35 °C is considered unsurvivable for prolonged exposure. This is a hobby tool — don't use it for safety-critical decisions.",
+    noMatches: "No matches",
+    loading: (name) => `Loading forecast for ${name}…`,
+    loadingMany: "Loading forecasts…",
+    loadFail: (name, err) => `Could not load forecast for ${name}: ${err}`,
+    loadFailMany: (names) => `Could not load forecasts for: ${names}`,
+    already: (name) => `${name} is already on the chart.`,
+    limit: `Limit of ${MAX_CITIES} cities reached — remove one first.`,
+    searchFail: (err) => `City search failed: ${err}`,
+    chartFail: (err) => `Could not load the chart (${err}). If you opened index.html directly from disk, serve it instead: python -m http.server`,
+    removeCity: (name) => `Remove ${name}`,
+    svgAria: "NOAA heat index chart: air temperature versus relative humidity, with city dots at each city's peak wet-bulb hour",
+    tipPeak: (v, time) => `peak wet-bulb ${v}°C at ${time} local`,
+    tipAir: (t, f, rh) => `Air ${t}°C (${f}°F), humidity ${rh}%`,
+    tipHi: (c, f) => `Heat index ${c}°C (${f}°F)`,
+    tipLow: "(cooler than chart range — pinned to bottom edge)",
+    tipHigh: "(hotter than chart range — pinned to top edge)",
+    cat: { caution: "Caution", excaution: "Extreme caution", danger: "Danger", extreme: "Extreme danger" },
+  },
+  es: {
+    tagline: "Elige ciudades y compara la hora de máxima temperatura de bulbo húmedo, sobre el gráfico de índice de calor de la NOAA.",
+    searchPlaceholder: "Busca una ciudad…",
+    searchAria: "Buscar una ciudad",
+    today: "Hoy",
+    tomorrow: "Mañana",
+    dayAria: "Día del pronóstico",
+    chartNote: "Cada punto marca una ciudad a su hora prevista de <strong>máxima temperatura de bulbo húmedo</strong> del día seleccionado (temperatura del aire vs. humedad relativa). Las curvas y zonas de color muestran el índice de calor. Las ciudades fuera del rango se fijan al borde del gráfico con un marcador hueco.",
+    thCity: "Ciudad", thPeak: "Bulbo húmedo máx.", thAt: "Hora (local)", thAir: "Temp. del aire",
+    thHum: "Humedad", thHi: "Índice de calor", thRemove: "Quitar",
+    empty: `Aún no hay ciudades: busca arriba para añadir una (hasta ${MAX_CITIES}).`,
+    footer: 'Datos meteorológicos de <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) · Gráfico: <a href="https://www.weather.gov/jetstream/hi" rel="noopener">índice de calor de NOAA JetStream</a> (dominio público) · <a href="https://github.com/Etienne-Lefebvre/wet-bulb-city-compare" rel="noopener">Código en GitHub</a>',
+    disclaimer: "Una temperatura de bulbo húmedo cercana a 31 °C es peligrosa incluso para personas sanas en reposo; 35 °C se considera insoportable para el cuerpo en exposición prolongada. Esta es una herramienta casera: no la uses para decisiones de seguridad.",
+    noMatches: "Sin resultados",
+    loading: (name) => `Cargando el pronóstico de ${name}…`,
+    loadingMany: "Cargando pronósticos…",
+    loadFail: (name, err) => `No se pudo cargar el pronóstico de ${name}: ${err}`,
+    loadFailMany: (names) => `No se pudieron cargar los pronósticos de: ${names}`,
+    already: (name) => `${name} ya está en el gráfico.`,
+    limit: `Límite de ${MAX_CITIES} ciudades alcanzado: quita una primero.`,
+    searchFail: (err) => `Falló la búsqueda de ciudades: ${err}`,
+    chartFail: (err) => `No se pudo cargar el gráfico (${err}). Si abriste index.html directamente desde el disco, sírvelo con: python -m http.server`,
+    removeCity: (name) => `Quitar ${name}`,
+    svgAria: "Gráfico de índice de calor de la NOAA: temperatura del aire frente a humedad relativa, con un punto por ciudad a su hora de máximo bulbo húmedo",
+    tipPeak: (v, time) => `bulbo húmedo máx. ${v}°C a las ${time} (hora local)`,
+    tipAir: (t, f, rh) => `Aire ${t}°C (${f}°F), humedad ${rh}%`,
+    tipHi: (c, f) => `Índice de calor ${c}°C (${f}°F)`,
+    tipLow: "(más frío que el rango del gráfico: fijado al borde inferior)",
+    tipHigh: "(más caliente que el rango del gráfico: fijado al borde superior)",
+    cat: { caution: "Precaución", excaution: "Precaución extrema", danger: "Peligro", extreme: "Peligro extremo" },
+  },
+};
+
+let lang = localStorage.getItem("wbc-lang") ||
+  ((navigator.language || "").toLowerCase().startsWith("es") ? "es" : "en");
+
+const t = (key, ...args) => {
+  const v = I18N[lang][key];
+  return typeof v === "function" ? v(...args) : v;
+};
+
+// Spanish text for the chart SVG itself. Each entry rewrites one <tspan>/<text>
+// (per-glyph x positioning is replaced by a single anchor, so translated
+// strings flow naturally in place).
+const SVG_ES = [
+  // zone words
+  { id: "tspan570", text: "EXTREMADAMENTE CALIENTE", x: 163, anchor: "middle", size: 24 },
+  { id: "tspan576", text: "MUY CALIENTE", x: 102, anchor: "middle", size: 27 },
+  { id: "tspan582", text: "CALIENTE", x: 45, anchor: "middle", size: 20 },
+  { id: "tspan588", text: "MUY CÁLIDO", x: 116, anchor: "middle", size: 28 },
+  { id: "tspan590", text: "CÁLIDO", x: 116, anchor: "middle", size: 30 },
+  // axis titles (the tiny standalone degree glyphs are hidden; ° is inlined)
+  { id: "tspan168", text: "Humedad Relativa (%)", x: 171, anchor: "middle" },
+  { id: "tspan172", text: "Temperatura del Aire (°C)", x: 167, anchor: "middle" },
+  { id: "text174", hide: true },
+  { id: "tspan220", text: "Temperatura Aparente (°C)", x: 269, anchor: "middle" },
+  { id: "text222", hide: true },
+  // big red title (and its outline copy), smaller so it clears the paragraph
+  { id: "tspan228", text: "Índice de Calor", x: 0, size: 60 },
+  { id: "tspan240", text: "Índice de Calor", x: 0, size: 60 },
+  // legend table
+  { id: "tspan604", text: "Efectos generales en personas de alto riesgo", x: 197, anchor: "middle" },
+  { id: "tspan648", text: "Índice de calor/", x: 93, anchor: "middle" },
+  { id: "tspan650", text: "Temperatura aparente", x: 89, anchor: "middle" },
+  { id: "tspan706", text: "Golpe de calor o insolación MUY", x: 0, size: 19 },
+  { id: "tspan708", text: "PROBABLES con exposición continua", x: 0, size: 19 },
+  { id: "tspan710", text: "Insolación, calambres o agotamiento por", x: 0, size: 19 },
+  { id: "tspan712", text: "calor PROBABLES; golpe de calor POSIBLE", x: 0, size: 19 },
+  { id: "tspan714", text: "con exposición prolongada y actividad física", x: 0, size: 19 },
+  { id: "tspan716", text: "Insolación, calambres o agotamiento por", x: 0, size: 19 },
+  { id: "tspan718", text: "calor POSIBLES con exposición prolongada", x: 0, size: 19 },
+  { id: "tspan720", text: "y/o actividad física", x: 0, size: 19 },
+  { id: "tspan722", text: "Fatiga POSIBLE con exposición", x: 0, size: 19 },
+  { id: "tspan724", text: "prolongada y/o actividad física", x: 0, size: 19 },
+  // description paragraph (top center)
+  { id: "tspan246", text: "El “Índice de Calor” mide cuán caluroso se “siente” el clima para el cuerpo. Esta tabla usa la humedad", x: 423.93604 },
+  { id: "tspan248", text: "relativa y la temperatura del aire para producir la “temperatura aparente”: la que el cuerpo “siente”.", x: 423.93604 },
+  { id: "tspan250", text: "Estos valores son para lugares a la sombra. La exposición al sol pleno puede aumentar el índice de calor", x: 423.93604 },
+  { id: "tspan252", text: "hasta en 8°C. Además, los vientos fuertes, sobre todo con aire muy caliente y seco, pueden ser muy peligrosos.", x: 423.93604 },
+];
+
+const svgOriginals = new Map(); // id -> saved attributes for restoring English
+
+function translateSvg() {
+  const svg = document.querySelector("#chart svg");
+  if (!svg) return;
+  for (const entry of SVG_ES) {
+    const el = svg.getElementById(entry.id);
+    if (!el) continue;
+    if (!svgOriginals.has(entry.id)) {
+      svgOriginals.set(entry.id, {
+        text: el.textContent,
+        x: el.getAttribute("x"),
+        anchor: el.getAttribute("text-anchor"),
+        size: el.style.fontSize || "",
+        display: el.getAttribute("display"),
+      });
+    }
+    if (lang === "es") {
+      if (entry.hide) {
+        el.setAttribute("display", "none");
+      } else {
+        el.textContent = entry.text;
+        el.setAttribute("x", String(entry.x));
+        if (entry.anchor) el.setAttribute("text-anchor", entry.anchor);
+        if (entry.size) el.style.fontSize = entry.size + "px";
+      }
+    } else {
+      const o = svgOriginals.get(entry.id);
+      el.textContent = o.text;
+      if (o.x == null) el.removeAttribute("x"); else el.setAttribute("x", o.x);
+      if (o.anchor == null) el.removeAttribute("text-anchor"); else el.setAttribute("text-anchor", o.anchor);
+      el.style.fontSize = o.size;
+      if (o.display == null) el.removeAttribute("display"); else el.setAttribute("display", o.display);
+    }
+  }
+  svg.setAttribute("aria-label", t("svgAria"));
+}
+
+function applyStaticText() {
+  document.documentElement.lang = lang;
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    el.textContent = t(el.dataset.i18n);
+  }
+  for (const el of document.querySelectorAll("[data-i18n-html]")) {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  }
+  const input = document.querySelector("#city-search");
+  input.placeholder = t("searchPlaceholder");
+  input.setAttribute("aria-label", t("searchAria"));
+  document.querySelector(".day-toggle").setAttribute("aria-label", t("dayAria"));
+  document.querySelector("#lang-en").classList.toggle("active", lang === "en");
+  document.querySelector("#lang-es").classList.toggle("active", lang === "es");
+  document.querySelector("#lang-en").setAttribute("aria-pressed", String(lang === "en"));
+  document.querySelector("#lang-es").setAttribute("aria-pressed", String(lang === "es"));
+}
+
+function setLanguage(next) {
+  if (next === lang) return;
+  lang = next;
+  localStorage.setItem("wbc-lang", lang);
+  applyStaticText();
+  translateSvg();
+  renderAll();
+}
+
+// ---------------------------------------------------------------------------
 // Meteorology helpers
 const cToF = (c) => c * 1.8 + 32;
 const fToC = (f) => (f - 32) / 1.8;
@@ -59,11 +239,11 @@ function heatIndexF(tF, rh) {
 }
 
 function heatIndexCategory(hiF) {
-  if (hiF >= 125) return "Extreme danger";
-  if (hiF >= 103) return "Danger";
-  if (hiF >= 90) return "Extreme caution";
-  if (hiF >= 80) return "Caution";
-  return "—";
+  if (hiF >= 125) return "extreme";
+  if (hiF >= 103) return "danger";
+  if (hiF >= 90) return "excaution";
+  if (hiF >= 80) return "caution";
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -72,10 +252,9 @@ let cities = []; // {name, admin1, country, countryCode, lat, lon, slot, hourly?
 let day = "today"; // or "tomorrow"
 
 const $ = (sel) => document.querySelector(sel);
-const statusEl = () => $("#status");
 
 function setStatus(msg) {
-  statusEl().textContent = msg || "";
+  $("#status").textContent = msg || "";
 }
 
 function saveCities() {
@@ -176,12 +355,13 @@ function renderDots() {
     const cy = yForTempF(tPlot);
 
     const g = el("g", { class: "city-dot", "data-name": city.name });
+    const cat = p.hiCat ? " — " + t("cat")[p.hiCat] : "";
     const tip =
-      `${city.name} — peak wet-bulb ${p.wetBulbC.toFixed(1)}°C at ${p.localTime} local` +
-      `\nAir ${p.tempC.toFixed(1)}°C (${p.tempF.toFixed(0)}°F), humidity ${p.rh}%` +
-      `\nHeat index ${p.hiC.toFixed(0)}°C (${p.hiF.toFixed(0)}°F) ${p.hiCat !== "—" ? "— " + p.hiCat : ""}` +
-      (clampedLow ? "\n(cooler than chart range — pinned to bottom edge)" : "") +
-      (clampedHigh ? "\n(hotter than chart range — pinned to top edge)" : "");
+      `${city.name} — ${t("tipPeak", p.wetBulbC.toFixed(1), p.localTime)}` +
+      `\n${t("tipAir", p.tempC.toFixed(1), p.tempF.toFixed(0), p.rh)}` +
+      `\n${t("tipHi", p.hiC.toFixed(0), p.hiF.toFixed(0))}${cat}` +
+      (clampedLow ? "\n" + t("tipLow") : "") +
+      (clampedHigh ? "\n" + t("tipHigh") : "");
     g.appendChild(el("title", {}, tip));
 
     g.appendChild(el("circle", {
@@ -227,18 +407,19 @@ function renderTable() {
     const tr = document.createElement("tr");
     const p = city.peak;
     const place = [city.name, city.admin1, city.country].filter(Boolean).join(", ");
+    const cat = p && p.hiCat ? " · " + t("cat")[p.hiCat] : "";
     tr.innerHTML = `
       <td><span class="swatch slot-${city.slot}" aria-hidden="true"></span>${escapeHtml(place)}</td>
       <td class="num">${p ? `<strong>${p.wetBulbC.toFixed(1)} °C</strong>` : "—"}</td>
       <td class="num">${p ? p.localTime : "—"}</td>
       <td class="num">${p ? `${p.tempC.toFixed(1)} °C / ${p.tempF.toFixed(0)} °F` : "—"}</td>
       <td class="num">${p ? p.rh + " %" : "—"}</td>
-      <td class="num">${p ? `${p.hiC.toFixed(0)} °C${p.hiCat !== "—" ? " · " + p.hiCat : ""}` : "—"}</td>
+      <td class="num">${p ? `${p.hiC.toFixed(0)} °C${escapeHtml(cat)}` : "—"}</td>
       <td></td>`;
     const btn = document.createElement("button");
     btn.className = "remove-btn";
     btn.textContent = "×";
-    btn.setAttribute("aria-label", `Remove ${city.name}`);
+    btn.setAttribute("aria-label", t("removeCity", city.name));
     btn.addEventListener("click", () => removeCity(city));
     tr.lastElementChild.appendChild(btn);
     tbody.appendChild(tr);
@@ -265,12 +446,12 @@ function freeSlot() {
 
 async function addCity(place) {
   if (cities.some((c) => c.lat === place.latitude && c.lon === place.longitude)) {
-    setStatus(`${place.name} is already on the chart.`);
+    setStatus(t("already", place.name));
     return;
   }
   const slot = freeSlot();
   if (slot === -1) {
-    setStatus(`Limit of ${MAX_CITIES} cities reached — remove one first.`);
+    setStatus(t("limit"));
     return;
   }
   const city = {
@@ -283,13 +464,13 @@ async function addCity(place) {
     slot,
   };
   cities.push(city);
-  setStatus(`Loading forecast for ${city.name}…`);
+  setStatus(t("loading", city.name));
   try {
     await fetchForecast(city);
     setStatus("");
   } catch (err) {
     cities = cities.filter((c) => c !== city);
-    setStatus(`Could not load forecast for ${city.name}: ${err.message}`);
+    setStatus(t("loadFail", city.name, err.message));
   }
   saveCities();
   renderAll();
@@ -324,7 +505,7 @@ function setupSearch() {
   async function runSearch(q) {
     try {
       const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=en&format=json`);
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=${lang}&format=json`);
       if (!res.ok) throw new Error(`geocoding failed (${res.status})`);
       const json = await res.json();
       results = json.results || [];
@@ -332,7 +513,7 @@ function setupSearch() {
       if (results.length === 0) {
         const li = document.createElement("li");
         li.className = "no-results";
-        li.textContent = "No matches";
+        li.textContent = t("noMatches");
         list.appendChild(li);
       }
       results.forEach((r) => {
@@ -351,7 +532,7 @@ function setupSearch() {
       list.hidden = false;
       input.setAttribute("aria-expanded", "true");
     } catch (err) {
-      setStatus(`City search failed: ${err.message}`);
+      setStatus(t("searchFail", err.message));
       close();
     }
   }
@@ -380,7 +561,7 @@ function setupSearch() {
 }
 
 // ---------------------------------------------------------------------------
-// Day toggle
+// Toggles
 function setupDayToggle() {
   const btns = { today: $("#day-today"), tomorrow: $("#day-tomorrow") };
   for (const [key, btn] of Object.entries(btns)) {
@@ -395,11 +576,18 @@ function setupDayToggle() {
   }
 }
 
+function setupLangToggle() {
+  $("#lang-en").addEventListener("click", () => setLanguage("en"));
+  $("#lang-es").addEventListener("click", () => setLanguage("es"));
+}
+
 // ---------------------------------------------------------------------------
 // Init
 async function init() {
   setupSearch();
   setupDayToggle();
+  setupLangToggle();
+  applyStaticText();
 
   // Inject the chart SVG inline so we can draw on it.
   try {
@@ -411,22 +599,22 @@ async function init() {
     svg.removeAttribute("width");
     svg.removeAttribute("height");
     svg.setAttribute("role", "img");
-    svg.setAttribute("aria-label", "NOAA heat index chart: air temperature versus relative humidity, with city dots at each city's peak wet-bulb hour");
     $("#chart").replaceChildren(svg);
+    translateSvg();
   } catch (err) {
-    setStatus(`Could not load the chart (${err.message}). If you opened index.html directly from disk, serve it instead: python -m http.server`);
+    setStatus(t("chartFail", err.message));
     return;
   }
 
   // Restore saved cities.
   const saved = loadSavedCities();
   if (saved.length > 0) {
-    setStatus("Loading forecasts…");
+    setStatus(t("loadingMany"));
     cities = saved.slice(0, MAX_CITIES);
     const outcomes = await Promise.allSettled(cities.map(fetchForecast));
     const failed = cities.filter((_, i) => outcomes[i].status === "rejected");
     if (failed.length > 0) {
-      setStatus(`Could not load forecasts for: ${failed.map((c) => c.name).join(", ")}`);
+      setStatus(t("loadFailMany", failed.map((c) => c.name).join(", ")));
       cities = cities.filter((_, i) => outcomes[i].status === "fulfilled");
     } else {
       setStatus("");
