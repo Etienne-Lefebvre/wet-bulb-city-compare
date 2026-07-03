@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wet-Bulb City Compare</title>
+  <meta name="description" content="Compare today's peak wet-bulb temperature and heat index between cities, plotted on the NOAA heat index chart.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;&#127777;&lt;/text&gt;&lt;/svg&gt;">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Wet-Bulb City Compare</h1>
+    <p class="tagline">Pick cities and compare the hour of peak wet-bulb temperature, plotted on the NOAA heat index chart.</p>
+  </header>
+
+  <main>
+    <section class="controls" aria-label="Add a city">
+      <div class="search-box">
+        <input id="city-search" type="search" placeholder="Search for a city&hellip;" autocomplete="off"
+               aria-label="Search for a city" aria-expanded="false" role="combobox" aria-controls="search-results">
+        <ul id="search-results" role="listbox" hidden></ul>
+      </div>
+      <div class="day-toggle" role="group" aria-label="Forecast day">
+        <button id="day-today" class="day-btn active" aria-pressed="true">Today</button>
+        <button id="day-tomorrow" class="day-btn" aria-pressed="false">Tomorrow</button>
+      </div>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+
+    <section class="chart-wrap" aria-label="Heat index chart">
+      <div id="chart"><!-- graph.svg is injected here --></div>
+      <p class="chart-note">Each dot marks a city at its forecast hour of <strong>peak wet-bulb temperature</strong> for the selected day
+        (air temperature vs. relative humidity). Curves and colored zones show the heat index. Off-chart cities are pinned to the chart edge with a hollow marker.</p>
+    </section>
+
+    <section class="city-list" aria-label="Selected cities">
+      <table id="city-table" hidden>
+        <thead>
+          <tr>
+            <th scope="col">City</th>
+            <th scope="col">Peak wet-bulb</th>
+            <th scope="col">At (local)</th>
+            <th scope="col">Air temp</th>
+            <th scope="col">Humidity</th>
+            <th scope="col">Heat index</th>
+            <th scope="col"><span class="visually-hidden">Remove</span></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p id="empty-hint">No cities yet &mdash; search above to add one (up to 8).</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Weather data by <a href="https://open-meteo.com/" rel="noopener">Open-Meteo.com</a> (CC BY 4.0) &middot;
+      Chart: <a href="https://www.weather.gov/jetstream/hi" rel="noopener">NOAA JetStream heat index graph</a> (public domain) &middot;
+      <a href="https://github.com/Etienne-Lefebvre/wet-bulb-city-compare" id="repo-link" rel="noopener">Source on GitHub</a>
+    </p>
+    <p class="disclaimer">Wet-bulb temperatures near 31&nbsp;&deg;C are dangerous even for healthy people at rest; 35&nbsp;&deg;C is considered unsurvivable for prolonged exposure. This is a hobby tool &mdash; don't use it for safety-critical decisions.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

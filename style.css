@@ -1,0 +1,196 @@
+/* Wet-Bulb City Compare */
+
+:root {
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --border: rgba(11, 11, 11, 0.1);
+  --accent: #2a78d6;
+  /* categorical slots (light) */
+  --s0: #2a78d6; --s1: #1baf7a; --s2: #eda100; --s3: #008300;
+  --s4: #4a3aa7; --s5: #e34948; --s6: #e87ba4; --s7: #eb6834;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --border: rgba(255, 255, 255, 0.12);
+    --accent: #3987e5;
+    /* dark-stepped categorical slots */
+    --s0: #3987e5; --s1: #199e70; --s2: #c98500; --s3: #008300;
+    --s4: #9085e9; --s5: #e66767; --s6: #d55181; --s7: #d95926;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 0 16px 40px;
+  background: var(--page);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.45;
+}
+
+.site-header { padding: 28px 0 4px; }
+.site-header h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.tagline { margin: 0; color: var(--ink-2); }
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 18px 0 6px;
+}
+
+.search-box { position: relative; flex: 1 1 280px; max-width: 420px; }
+
+#city-search {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+#city-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+#search-results {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  max-height: 320px;
+  overflow-y: auto;
+}
+#search-results li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#search-results li:hover { background: rgba(42, 120, 214, 0.12); }
+#search-results li .detail { color: var(--ink-2); font-size: 0.9em; }
+#search-results li.no-results { color: var(--muted); cursor: default; }
+
+.day-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.day-btn {
+  padding: 10px 16px;
+  font: inherit;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: none;
+  cursor: pointer;
+}
+.day-btn.active { background: var(--accent); color: #fff; }
+
+.status { min-height: 1.3em; margin: 4px 0; color: var(--ink-2); }
+
+/* Chart */
+.chart-wrap {
+  background: #fff; /* the NOAA chart is drawn for a white surface — keep it in both themes */
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+#chart svg { display: block; width: 100%; height: auto; }
+
+.dot-label {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  fill: #0b0b0b;
+  stroke: #ffffff;
+  stroke-width: 8px;
+  paint-order: stroke;
+}
+
+.chart-note { margin: 10px 6px 4px; color: var(--ink-2); font-size: 0.9rem; }
+@media (prefers-color-scheme: dark) {
+  .chart-note { color: var(--ink-2); }
+}
+
+/* City table */
+.city-list { margin-top: 20px; }
+
+#city-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+#city-table th, #city-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+#city-table th { color: var(--ink-2); font-weight: 600; font-size: 0.85rem; }
+#city-table tr:last-child td { border-bottom: none; }
+#city-table td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: baseline;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.slot-0 { background: var(--s0); } .slot-1 { background: var(--s1); }
+.slot-2 { background: var(--s2); } .slot-3 { background: var(--s3); }
+.slot-4 { background: var(--s4); } .slot-5 { background: var(--s5); }
+.slot-6 { background: var(--s6); } .slot-7 { background: var(--s7); }
+
+.remove-btn {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.remove-btn:hover { color: #d03b3b; background: rgba(208, 59, 59, 0.1); }
+
+#empty-hint { color: var(--muted); }
+
+/* Footer */
+.site-footer { margin-top: 32px; color: var(--ink-2); font-size: 0.85rem; }
+.site-footer a { color: var(--accent); }
+.disclaimer { color: var(--muted); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  #city-table { display: block; overflow-x: auto; }
+  .dot-label { font-size: 36px; }
+}
